@@ -1,0 +1,60 @@
+
+============================================================
+PAIRS TRADING STRATEGY REPORT
+============================================================
+
+Strategy: Statistical Arbitrage (Cointegration-based)
+Data: ASX 200
+Time Period: 2023-01-01 to 2025-11-26
+Initial Capital: $100,000.00
+
+============================================================
+PERFORMANCE METRICS
+============================================================
+
+Total Return:        1.58%
+Annual Return:       0.37%
+Sharpe Ratio:        0.37
+Max Drawdown:        -1.66%
+Win Rate:            0.00%
+
+============================================================
+TRADE STATISTICS
+============================================================
+
+Total Trades:        117
+Winning Trades:      0
+Losing Trades:       116
+Final Equity:        $101,582.24
+
+============================================================
+STRATEGY PARAMETERS
+============================================================
+
+Entry Threshold (Long):   Z-score < -2.0
+Entry Threshold (Short):  Z-score > 2.0
+Exit Threshold:           |Z-score| < 0.5
+Stop Loss:                |Z-score| > 3.0
+Position Size:            1.0% per pair
+Transaction Cost:         0.100%
+
+============================================================
+KEY FINDINGS
+============================================================
+
+- The strategy identified 117 cointegrated pairs
+- Entry signals triggered when z-score exceeds ±2.0
+- Exit when z-score mean-reverts to ±0.5 or risk threshold ±3.0
+- Transaction costs accounted for (0.100% per trade)
+
+============================================================
+RECOMMENDATIONS
+============================================================
+
+1. Walk-forward testing on out-of-sample data (2024-2025)
+2. Compare with buy-and-hold benchmark
+3. Optimize window size and z-score thresholds
+4. Consider dynamic position sizing based on volatility
+5. Add additional filters (volume, liquidity)
+
+============================================================
