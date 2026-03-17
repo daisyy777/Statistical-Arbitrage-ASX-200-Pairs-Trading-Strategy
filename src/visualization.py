@@ -11,7 +11,7 @@ import config
 def plot_backtest_results(results, save_path=None):
     """
     Generate comprehensive backtest visualization
-    
+
     Parameters:
     -----------
     results : dict
@@ -22,12 +22,12 @@ def plot_backtest_results(results, save_path=None):
     if results is None:
         print("No results to plot")
         return
-    
+
     equity_df = results['Equity_Curve']
     trades_df = results['Trades']
-    
+
     fig = plt.figure(figsize=(16, 10))
-    
+
     # 1. Equity curve
     ax1 = plt.subplot(3, 2, 1)
     ax1.plot(equity_df.index, equity_df['Equity'], linewidth=2, color='#2E86AB')
@@ -36,7 +36,7 @@ def plot_backtest_results(results, save_path=None):
     ax1.set_ylabel('Portfolio Value ($)', fontsize=12)
     ax1.legend()
     ax1.grid(True, alpha=0.3)
-    
+
     # 2. Drawdown
     ax2 = plt.subplot(3, 2, 2)
     cumulative = equity_df['Cumulative_Returns']
@@ -47,11 +47,13 @@ def plot_backtest_results(results, save_path=None):
     ax2.set_title('Drawdown', fontsize=14, fontweight='bold')
     ax2.set_ylabel('Drawdown (%)', fontsize=12)
     ax2.grid(True, alpha=0.3)
-    
+
     # 3. Monthly returns
     ax3 = plt.subplot(3, 2, 3)
-    equity_df['Month'] = equity_df.index.to_period('M')
-    monthly = equity_df.groupby('Month')['Equity'].apply(lambda x: (x.iloc[-1] / x.iloc[0] - 1) * 100)
+    # Bug fix: use a copy so the original equity_df in results dict is not modified
+    monthly_df = equity_df[['Equity']].copy()
+    monthly_df['Month'] = monthly_df.index.to_period('M')
+    monthly = monthly_df.groupby('Month')['Equity'].apply(lambda x: (x.iloc[-1] / x.iloc[0] - 1) * 100)
     colors = ['green' if x > 0 else 'red' for x in monthly.values]
     ax3.bar(range(len(monthly)), monthly.values, color=colors, alpha=0.7)
     ax3.set_title('Monthly Returns', fontsize=14, fontweight='bold')
@@ -59,7 +61,7 @@ def plot_backtest_results(results, save_path=None):
     ax3.set_xlabel('Month', fontsize=12)
     ax3.axhline(y=0, color='black', linestyle='-', linewidth=0.5)
     ax3.grid(True, alpha=0.3, axis='y')
-    
+
     # 4. Trade frequency
     ax4 = plt.subplot(3, 2, 4)
     entry_trades = trades_df[trades_df['Type'] == 'ENTRY'].copy()
@@ -72,7 +74,7 @@ def plot_backtest_results(results, save_path=None):
         ax4.set_ylabel('Number of Trades', fontsize=12)
         ax4.set_xlabel('Month', fontsize=12)
         ax4.grid(True, alpha=0.3, axis='y')
-    
+
     # 5. P&L distribution
     ax5 = plt.subplot(3, 2, 5)
     exit_trades = trades_df[trades_df['Type'] == 'EXIT']
@@ -86,48 +88,47 @@ def plot_backtest_results(results, save_path=None):
             ax5.set_xlabel('P&L ($)', fontsize=12)
             ax5.legend()
             ax5.grid(True, alpha=0.3, axis='y')
-    
+
     # 6. Performance metrics text
     ax6 = plt.subplot(3, 2, 6)
     ax6.axis('off')
-    
+
     metrics_text = f"""
     PERFORMANCE METRICS
-    
+
     Total Return: {results['Total_Return']:.2%}
     Annual Return: {results['Annual_Return']:.2%}
     Sharpe Ratio: {results['Sharpe_Ratio']:.2f}
     Max Drawdown: {results['Max_Drawdown']:.2%}
     Win Rate: {results['Win_Rate']:.2%}
-    
+
     TRADE STATISTICS
-    
+
     Total Trades: {results['Num_Trades']}
     Winning Trades: {results['Num_Winning_Trades']}
     Losing Trades: {results['Num_Losing_Trades']}
     Final Equity: ${results['Final_Equity']:,.2f}
     """
-    
+
     ax6.text(0.1, 0.5, metrics_text, fontsize=12, family='monospace',
              verticalalignment='center', bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.5))
-    
+
     plt.tight_layout()
-    
+
     if save_path:
-        # Create directory if it doesn't exist
         dir_path = os.path.dirname(save_path)
-        if dir_path:  # Only create if dir_path is not empty
+        if dir_path:
             os.makedirs(dir_path, exist_ok=True)
         plt.savefig(save_path, dpi=300, bbox_inches='tight')
         print(f"Chart saved to: {save_path}")
-    
+
     plt.show()
 
 
 def generate_report(results, output_file=None):
     """
     Generate text report
-    
+
     Parameters:
     -----------
     results : dict
@@ -138,7 +139,7 @@ def generate_report(results, output_file=None):
     if results is None:
         print("No results to report")
         return
-    
+
     report = f"""
 {'='*60}
 PAIRS TRADING STRATEGY REPORT
@@ -184,8 +185,8 @@ KEY FINDINGS
 {'='*60}
 
 - The strategy identified {results['Num_Trades']} cointegrated pairs
-- Entry signals triggered when z-score exceeds ±2.0
-- Exit when z-score mean-reverts to ±0.5 or risk threshold ±3.0
+- Entry signals triggered when z-score exceeds \u00b12.0
+- Exit when z-score mean-reverts to \u00b10.5 or risk threshold \u00b13.0
 - Transaction costs accounted for ({config.TRANSACTION_COST:.3%} per trade)
 
 {'='*60}
@@ -200,13 +201,12 @@ RECOMMENDATIONS
 
 {'='*60}
 """
-    
+
     print(report)
-    
+
     if output_file:
-        # Create directory if it doesn't exist
         dir_path = os.path.dirname(output_file)
-        if dir_path:  # Only create if dir_path is not empty
+        if dir_path:
             os.makedirs(dir_path, exist_ok=True)
         with open(output_file, 'w', encoding='utf-8') as f:
             f.write(report)
@@ -214,5 +214,4 @@ RECOMMENDATIONS
 
 
 if __name__ == '__main__':
-    # This would be called from main.py after backtest
     pass
